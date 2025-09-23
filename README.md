@@ -1,6 +1,6 @@
 ## Zero-shot Sentiment (Groq)
 
-Returns one label from `labels` for input text using Groq’s chat API (no training/examples).
+Returns one label from `labels` for input text using Groq’s chat API 
 
 **Function:** `infer_sentiment(text, labels=("positive","negative"), model="llama-3.1-8b-instant")` (in `sentiment_infer.py`)
 
