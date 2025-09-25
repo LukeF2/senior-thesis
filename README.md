@@ -6,10 +6,10 @@ Returns one label from `labels` for input text using Groq’s chat API
 
 ## Usage
 
-Call `infer_sentiment(text, labels=...)` to get a single label (zero-shot).  
-
-```{python}
-from sentiment_infer import infer_sentiment
-
-print(infer_sentiment("I love this!"))                         # -> "positive"
-print(infer_sentiment("This was awful."))                      # -> "negative"
+```
+$ python3 -i sentiment_infer.py
+>>> infer_sentiment("I love this!")
+"positive"
+>>> infer_sentiment("This was awful.")
+"negative"
+```
