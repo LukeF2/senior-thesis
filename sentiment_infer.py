@@ -25,7 +25,7 @@ class LLM:
         # 1. SYSTEM - instructions + output
         sys_msg = (
             "You are a strict sentiment classifier.\n"
-            f"Allowed labels: {', '.join(labels)}.\n"
+            f"Allowed labels: {', '.join(self.labels)}.\n"
             "Reply with ONLY ONE WORD: Exactly ONE of the allowed labels."
         )
         

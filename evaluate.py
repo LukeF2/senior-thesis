@@ -2,36 +2,54 @@ import os
 from datasets import load_dataset
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+from datasets import load_dataset, concatenate_datasets
+from collections import Counter
 
 from sentiment_infer import LLM
 
-def load_imdb_subset(n=100, seed=42):
-    ds = load_dataset("imdb")
-    X = ds["train"]["text"][:n]
-    y = ["positive" if lbl == 1 else "negative" for lbl in ds["train"]["label"][:n]]
+
+
+def load_imdb_subset(n=100):
+    """
+    Return a balanced subset of IMDB train: n//2 negatives + n//2 positives, shuffled.
+    """
+    ds = load_dataset("imdb", split="train", cache_dir="./.hf_cache")
+    k = n // 2
+
+    # Safer than assuming order: explicitly take k from each label
+    neg = ds.filter(lambda ex: ex["label"] == 0).select(range(k))
+    pos = ds.filter(lambda ex: ex["label"] == 1).select(range(k))
+
+    small = concatenate_datasets([neg, pos]).shuffle(seed=42)
+
+    X = small["text"]
+    y = ["positive" if int(lbl) == 1 else "negative" for lbl in small["label"]]
     return X, y
 
 def main():
-    # 1) Data (100 samples)
+    # 1) Data (balanced 100)
     X, y = load_imdb_subset(n=100)
 
-    # 2) Split
+    # 2) Stratified split
     X_tr, X_te, y_tr, y_te = train_test_split(
         X, y, test_size=0.30, random_state=42, stratify=y
     )
 
+    print("Train:", Counter(y_tr))
+    print("Test: ", Counter(y_te))
+
     # 3) Model (no few-shot examples; nshots=0)
     clf = LLM(labels=("positive", "negative"), model="llama-3.1-8b-instant", nshots=0)
-    clf.fit(X_tr, y_tr)   # still fine to call; it won’t include examples in the prompt
+    clf.fit(X_tr, y_tr)
 
     # 4) Predict
     y_pred = [clf.infer(x) for x in X_te]
 
-    # 5) Metrics: accuracy + 3 others
+    # 5) Metrics (accuracy + 3 others; zero_division guards against edge cases)
     acc = accuracy_score(y_te, y_pred)
-    prec = precision_score(y_te, y_pred, pos_label="positive")
-    rec  = recall_score(y_te, y_pred,  pos_label="positive")
-    f1   = f1_score(y_te, y_pred,      pos_label="positive")
+    prec = precision_score(y_te, y_pred, pos_label="positive", zero_division=0)
+    rec  = recall_score(y_te, y_pred,  pos_label="positive", zero_division=0)
+    f1   = f1_score(y_te, y_pred,      pos_label="positive", zero_division=0)
 
     print("\n--- IMDB (n=100) — Results ---")
     print(f"Accuracy:  {acc:.3f}")
@@ -39,8 +57,8 @@ def main():
     print(f"Recall:    {rec:.3f}")
     print(f"F1:        {f1:.3f}")
 
+
 if __name__ == "__main__":
-    # Ensure your Groq API key is available
     if not os.environ.get("GROQ_API_KEY"):
         raise SystemExit("Please set GROQ_API_KEY in your environment.")
     main()
