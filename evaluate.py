@@ -4,7 +4,6 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 from datasets import load_dataset, concatenate_datasets
 from collections import Counter
-
 from sentiment_infer import LLM
 
 
@@ -16,7 +15,6 @@ def load_imdb_subset(n=100):
     ds = load_dataset("imdb", split="train", cache_dir="./.hf_cache")
     k = n // 2
 
-    # Safer than assuming order: explicitly take k from each label
     neg = ds.filter(lambda ex: ex["label"] == 0).select(range(k))
     pos = ds.filter(lambda ex: ex["label"] == 1).select(range(k))
 
@@ -38,14 +36,14 @@ def main():
     print("Train:", Counter(y_tr))
     print("Test: ", Counter(y_te))
 
-    # 3) Model (no few-shot examples; nshots=0)
-    clf = LLM(labels=("positive", "negative"), model="llama-3.1-8b-instant", nshots=0)
+    # 3) Model, few shot with 3 examples per label in prompt
+    clf = LLM(labels=("positive", "negative"), model="llama-3.1-8b-instant", nshots=3)
     clf.fit(X_tr, y_tr)
 
     # 4) Predict
     y_pred = [clf.infer(x) for x in X_te]
 
-    # 5) Metrics (accuracy + 3 others; zero_division guards against edge cases)
+    # 5) Metrics
     acc = accuracy_score(y_te, y_pred)
     prec = precision_score(y_te, y_pred, pos_label="positive", zero_division=0)
     rec  = recall_score(y_te, y_pred,  pos_label="positive", zero_division=0)
