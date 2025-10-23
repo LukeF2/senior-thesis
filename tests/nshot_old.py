@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# tests/nshot.py — argparse version (clean)
-
 import os
 import json
 import argparse
@@ -15,8 +12,22 @@ from datasets import load_dataset, concatenate_datasets
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 
+# import from your package (you said everything lives in __init__.py)
 from LLMClassifier import DEFAULTS, LLM
 
+CONFIG = {
+    "dataset": "imdb",          # later you can add "sst2", etc.
+    "n": 100,                   # total examples (balanced)
+    "test_size": 0.30,
+    "seed": 42,                 # master seed for deterministic runs
+    "models": ["llama-3.1-8b-instant"],
+    "temperatures": [0.0, 0.3], # sweep temps
+    "nshots": [0, 1, 2, 3, 5],  # x-axis
+    "labels": ("positive", "negative"),
+    "metrics": ["accuracy", "precision", "recall", "f1"],
+    "out_dir": "img",
+    "smooth": 0,                # moving-average window (0 = off)
+}
 
 
 def set_all_seeds(seed: int):
@@ -34,7 +45,8 @@ def set_all_seeds(seed: int):
 def git_short_hash() -> str:
     try:
         out = subprocess.check_output(
-            ["git", "rev-parse", "--short", "HEAD"], stderr=subprocess.DEVNULL
+            ["git", "rev-parse", "--short", "HEAD"],
+            stderr=subprocess.DEVNULL
         )
         return out.decode().strip()
     except Exception:
@@ -42,6 +54,7 @@ def git_short_hash() -> str:
 
 def ensure_outdir(p: str):
     Path(p).mkdir(parents=True, exist_ok=True)
+
 
 def moving_average(x, k):
     if not k or k <= 1:
@@ -52,26 +65,27 @@ def moving_average(x, k):
         out.append(sum(x[lo:i+1]) / len(x[lo:i+1]))
     return out
 
-
-# ---------------- datasets -----------------
-
 def load_imdb_subset(n=100, seed=42):
+    """
+    Return a balanced subset of IMDB train: n//2 negatives + n//2 positives, shuffled.
+    """
     ds = load_dataset("imdb", split="train", cache_dir="./.hf_cache")
     k = n // 2
+
     neg = ds.filter(lambda ex: ex["label"] == 0).select(range(k))
     pos = ds.filter(lambda ex: ex["label"] == 1).select(range(k))
-    small = concatenate_datasets([neg, pos]).shuffle(seed=seed)
+
+    small = concatenate_datasets([neg, pos]).shuffle(seed=42)
+
     X = small["text"]
     y = ["positive" if int(lbl) == 1 else "negative" for lbl in small["label"]]
     return X, y
 
 DATASETS = {
-    "imdb": load_imdb_subset,
-    # "sst2": load_sst2_subset,  # add later if you implement it
+    'imdb': load_imdb_subset,
 }
 
-
-# ---------------- metrics ------------------
+# 4 metrics
 
 def compute_metrics(y_true, y_pred, positive_label="positive"):
     return {
@@ -82,17 +96,18 @@ def compute_metrics(y_true, y_pred, positive_label="positive"):
     }
 
 
-# --------------- argparse ------------------
+# -----argparse------
 
 def parse_args():
     d = DEFAULTS
-    p = argparse.ArgumentParser(description="N-shot sweep and metric plots")
-    p.add_argument("--dataset", default=d["dataset"], choices=list(DATASETS.keys()))
+    p = argparse.ArgumentParser(
+	description="N-shot sweep and metric plots"
+    )
+    p.add_argument("--dataset", default=d["dataset"], choices=list(DATASET.keys()))
     p.add_argument("--n", type=int, default=d["n"], help="Total examples (balanced for IMDB).")
     p.add_argument("--test-size", type=float, default=d["test_size"], help="Test fraction.")
     p.add_argument("--seed", type=int, default=d["seed"], help="Master seed.")
     p.add_argument("--out-dir", default=d["out_dir"], help="Output folder for images/JSON.")
-
     p.add_argument("--model", dest="models", nargs="*", default=d["models"],
                    help="One or more models, e.g. --model llama-3.1-8b-instant llama-3.1-70b")
     p.add_argument("--temperature", nargs="*", type=float, default=d["temperatures"],
@@ -111,114 +126,112 @@ def parse_args():
     return p.parse_args()
 
 
-# ----------------- run/plot ----------------
-
 def run_and_plot(args):
     if args.dataset not in DATASETS:
         raise SystemExit(f"Unsupported dataset '{args.dataset}'. Options: {list(DATASETS)}")
     if not os.environ.get("GROQ_API_KEY"):
         raise SystemExit("Please set GROQ_API_KEY in your environment.")
 
-    # determinism
-    set_all_seeds(args.seed)
+    set_all_seeds(cfg["seed"])
 
-    # data
-    X, y = DATASETS[args.dataset](n=args.n, seed=args.seed)
+    # Load + split
+    X, y = DATASETS[cfg["dataset"]](n=cfg["n"], seed=cfg["seed"])
     X_tr, X_te, y_tr, y_te = train_test_split(
-        X, y, test_size=args.test_size, random_state=args.seed, stratify=y
+        X, y, test_size=cfg["test_size"], random_state=cfg["seed"], stratify=y
     )
     print("Train:", Counter(y_tr))
     print("Test: ", Counter(y_te))
 
-    # results[metric][(model, temp)] = list aligned with args.nshots
-    results = {m: defaultdict(list) for m in args.metrics}
+    # results[metric][(model, temp)] = list aligned with cfg["nshots"]
+    results = {m: defaultdict(list) for m in cfg["metrics"]}
 
-    # sweep grid
-    for model in args.models:
-        for temp in args.temperature:
+    # Sweep grid and collect metric series
+    for model in cfg["models"]:
+        for temp in cfg["temperatures"]:
             key = (model, temp)
-            for nshot in args.nshots:
-                set_all_seeds(args.seed)  # deterministic per grid point
+            for nshot in cfg["nshots"]:
+                # make each grid point deterministic
+                set_all_seeds(cfg["seed"])
 
                 clf = LLM(
-                    labels=tuple(args.labels),
+                    labels=tuple(cfg["labels"]),
                     model=model,
                     nshots=int(nshot),
                     temperature=float(temp),
-                    seed=args.seed,
+                    seed=cfg["seed"],
                 )
                 clf.fit(X_tr, y_tr)
                 y_pred = [clf.infer(x) for x in X_te]
 
-                m = compute_metrics(y_te, y_pred, positive_label=args.labels[-1])
-                for metric_name in args.metrics:
+                m = compute_metrics(y_te, y_pred, positive_label=cfg["labels"][1])
+                for metric_name in cfg["metrics"]:
                     results[metric_name][key].append(m[metric_name])
 
+                # quick console log
                 print(f"[{model}] T={temp} nshots={nshot} -> " +
-                      " ".join(f"{mn}={results[mn][key][-1]:.3f}" for mn in args.metrics))
+                      " ".join(f"{mn}={results[mn][key][-1]:.3f}" for mn in cfg["metrics"]))
 
-    # plotting
-    ensure_outdir(args.out_dir)
+    # Plot & save (one output file per metric)
+    ensure_outdir(cfg["out_dir"])
     gh = git_short_hash()
+
     common_params = {
-        "dataset": args.dataset,
-        "models": args.models,
-        "temps": args.temperature,
-        "nshots": args.nshots,
-        "seed": args.seed,
-        "n": args.n,
-        "test_size": args.test_size,
+        "dataset": cfg["dataset"],
+        "models": cfg["models"],
+        "temps": cfg["temperatures"],
+        "nshots": cfg["nshots"],
+        "seed": cfg["seed"],
+        "n": cfg["n"],
+        "test_size": cfg["test_size"],
     }
 
     for metric_name, series in results.items():
         plt.figure()
         for (model, temp), values in series.items():
-            ys = moving_average(values, args.smooth)
+            ys = moving_average(values, cfg["smooth"])
             label = f"{model}, T={temp}"
-            plt.plot(args.nshots, ys, marker="o", label=label)
+            plt.plot(cfg["nshots"], ys, marker="o", label=label)
 
         plt.xlabel("# shots (nshots)")
         plt.ylabel(metric_name.title())
-        plt.title(f"{metric_name.title()} vs N-shots — {args.dataset}")
+        plt.title(f"{metric_name.title()} vs N-shots — {cfg['dataset']}")
         plt.legend()
         plt.grid(True, alpha=0.3)
 
         fname = (
             f"{metric_name}"
-            f"__dataset={args.dataset}"
-            f"__models={'-'.join(args.models)}"
-            f"__temps={','.join(map(str, args.temperature))}"
-            f"__nshots={','.join(map(str, args.nshots))}"
-            f"__seed={args.seed}"
-            f"__n={args.n}"
+            f"__dataset={cfg['dataset']}"
+            f"__models={'-'.join(cfg['models'])}"
+            f"__temps={','.join(map(str, cfg['temperatures']))}"
+            f"__nshots={','.join(map(str, cfg['nshots']))}"
+            f"__seed={cfg['seed']}"
+            f"__n={cfg['n']}"
             f"__hash={gh}.png"
         ).replace(" ", "")
-        out_path = os.path.join(args.out_dir, fname)
+        out_path = os.path.join(cfg["out_dir"], fname)
         plt.savefig(out_path, dpi=180, bbox_inches="tight")
         plt.close()
         print(f"Wrote: {out_path}")
 
+        # raw numbers as JSON for reproducibility
         json_path = out_path.replace(".png", ".json")
         serializable = {f"{k[0]}|T={k[1]}": v for k, v in series.items()}
         with open(json_path, "w") as f:
             json.dump({
                 "metric": metric_name,
-                "nshots": args.nshots,
+                "nshots": cfg["nshots"],
                 "series": serializable,
                 "params": common_params,
                 "git_hash": gh,
             }, f, indent=2)
         print(f"Wrote: {json_path}")
 
-
 def main():
-    args = parse_args()
-    # ensure tuple for LLM constructor
+    args = parse_args()          # get CLI args
+    # make sure labels is a tuple for LLM
     if isinstance(args.labels, list):
         args.labels = tuple(args.labels)
     run_and_plot(args)
 
-
 if __name__ == "__main__":
-    main()
-
+    run_and_plot()

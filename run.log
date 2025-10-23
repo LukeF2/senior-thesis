@@ -1,0 +1,31 @@
+Train: Counter({'positive': 35, 'negative': 35})
+Test:  Counter({'negative': 15, 'positive': 15})
+[llama-3.1-8b-instant] T=0.0 nshots=0 -> accuracy=0.900 precision=0.833 recall=1.000 f1=0.909
+[llama-3.1-8b-instant] T=0.0 nshots=1 -> accuracy=0.900 precision=0.875 recall=0.933 f1=0.903
+[llama-3.1-8b-instant] T=0.0 nshots=2 -> accuracy=0.900 precision=0.875 recall=0.933 f1=0.903
+[llama-3.1-8b-instant] T=0.0 nshots=3 -> accuracy=0.933 precision=0.882 recall=1.000 f1=0.938
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Users/lukefeng/senior-thesis/tests/nshot.py", line 225, in <module>
+    main()
+  File "/Users/lukefeng/senior-thesis/tests/nshot.py", line 221, in main
+    run_and_plot(args)
+  File "/Users/lukefeng/senior-thesis/tests/nshot.py", line 153, in run_and_plot
+    y_pred = [clf.infer(x) for x in X_te]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lukefeng/senior-thesis/tests/nshot.py", line 153, in <listcomp>
+    y_pred = [clf.infer(x) for x in X_te]
+              ^^^^^^^^^^^^
+  File "/Users/lukefeng/senior-thesis/LLMClassifier/__init__.py", line 99, in infer
+    out = self.client.chat.completions.create(
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lukefeng/anaconda3/lib/python3.11/site-packages/groq/resources/chat/completions.py", line 448, in create
+    return self._post(
+           ^^^^^^^^^^^
+  File "/Users/lukefeng/anaconda3/lib/python3.11/site-packages/groq/_base_client.py", line 1242, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lukefeng/anaconda3/lib/python3.11/site-packages/groq/_base_client.py", line 1044, in request
+    raise self._make_status_error_from_response(err.response) from None
+groq.RateLimitError: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.1-8b-instant` in organization `org_01j66q0ecbek8veqb2besy96sa` service tier `on_demand` on tokens per day (TPD): Limit 500000, Used 499998, Requested 3070. Please try again in 8m50.1504s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}
