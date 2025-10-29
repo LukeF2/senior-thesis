@@ -1,0 +1,9 @@
+dataset,n,test_size,seed,model,temperature,nshots,prompt_tokens,completion_tokens,total_tokens,cost,git_hash
+imdb,20,0.3,42,meta-llama/llama-3.1-8b-instruct:free,0.0,3,0,0,0,0.000000,dbb8bfb
+imdb,20,0.3,42,meta-llama/llama-3.1-8b-instruct:free,0.0,3,0,0,0,0.000000,dbb8bfb
+imdb,20,0.3,42,meta-llama/llama-3.1-8b-instruct:free,0.0,0,0,0,0,0.000000,dbb8bfb
+imdb,20,0.3,42,meta-llama/llama-3.1-8b-instruct:free,0.0,1,0,0,0,0.000000,dbb8bfb
+imdb,20,0.3,42,meta-llama/llama-3.1-8b-instruct:free,0.0,3,0,0,0,0.000000,dbb8bfb
+imdb,20,0.3,42,meta-llama/llama-3.1-8b-instruct:free,0.0,0,0,0,0,0.000000,dbb8bfb
+imdb,20,0.3,42,meta-llama/llama-3.1-8b-instruct:free,0.0,1,0,0,0,0.000000,dbb8bfb
+imdb,20,0.3,42,meta-llama/llama-3.1-8b-instruct:free,0.0,3,0,0,0,0.000000,dbb8bfb

@@ -1,0 +1,15 @@
+Logging to img/logs/run_20251029-162847.log
+
+Train: Counter({'positive': 7, 'negative': 7})
+Test:  Counter({'negative': 3, 'positive': 3})
+[meta-llama/llama-3.1-8b-instruct:free] T=0.0 nshots=0 -> accuracy=0.500 precision=0.000 recall=0.000 f1=0.000
+[meta-llama/llama-3.1-8b-instruct:free] T=0.0 nshots=1 -> accuracy=0.500 precision=0.000 recall=0.000 f1=0.000
+[meta-llama/llama-3.1-8b-instruct:free] T=0.0 nshots=3 -> accuracy=0.500 precision=0.000 recall=0.000 f1=0.000
+Wrote: img/png/accuracy__dataset=imdb__models=meta-llama_llama-3.1-8b-instruct_free__temps=0.0__nshots=0,1,3__seed=42__n=20__hash=dbb8bfb.png.png
+Wrote: img/json/accuracy__dataset=imdb__models=meta-llama_llama-3.1-8b-instruct_free__temps=0.0__nshots=0,1,3__seed=42__n=20__hash=dbb8bfb.png.json
+Wrote: img/png/precision__dataset=imdb__models=meta-llama_llama-3.1-8b-instruct_free__temps=0.0__nshots=0,1,3__seed=42__n=20__hash=dbb8bfb.png.png
+Wrote: img/json/precision__dataset=imdb__models=meta-llama_llama-3.1-8b-instruct_free__temps=0.0__nshots=0,1,3__seed=42__n=20__hash=dbb8bfb.png.json
+Wrote: img/png/recall__dataset=imdb__models=meta-llama_llama-3.1-8b-instruct_free__temps=0.0__nshots=0,1,3__seed=42__n=20__hash=dbb8bfb.png.png
+Wrote: img/json/recall__dataset=imdb__models=meta-llama_llama-3.1-8b-instruct_free__temps=0.0__nshots=0,1,3__seed=42__n=20__hash=dbb8bfb.png.json
+Wrote: img/png/f1__dataset=imdb__models=meta-llama_llama-3.1-8b-instruct_free__temps=0.0__nshots=0,1,3__seed=42__n=20__hash=dbb8bfb.png.png
+Wrote: img/json/f1__dataset=imdb__models=meta-llama_llama-3.1-8b-instruct_free__temps=0.0__nshots=0,1,3__seed=42__n=20__hash=dbb8bfb.png.json

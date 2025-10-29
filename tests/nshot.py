@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-# tests/nshot.py — argparse version (clean)
 
+import csv
 import os
 import json
 import argparse
@@ -17,7 +17,29 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 
 from LLMClassifier import DEFAULTS, LLM
 
+import re
 
+def sanitize_for_filename(s: str) -> str:
+    """Replace unsafe filename characters with underscores."""
+    return re.sub(r"[^A-Za-z0-9._-]+", "_", s)
+
+def write_usage_row(csv_path, row):
+   """
+   Appends or creates a CSV w/ token and cost accounting per grid point.
+   """
+   os.makedirs(os.path.dirname(csv_path), exist_ok=True)
+   file_exists = os.path.exists(csv_path)
+   fieldnames = [
+       "dataset", "n", "test_size", "seed",
+       "model", "temperature", "nshots",
+       "prompt_tokens", "completion_tokens", "total_tokens", "cost",
+       "git_hash",
+   ]
+   with open(csv_path, "a", newline="") as f:
+       w = csv.DictWriter(f, fieldnames=fieldnames)
+       if not file_exists:
+           w.writeheader()
+       w.writerow(row)
 
 def set_all_seeds(seed: int):
     random.seed(seed)
@@ -129,6 +151,15 @@ def run_and_plot(args):
     )
     print("Train:", Counter(y_tr))
     print("Test: ", Counter(y_te))
+    
+    ensure_outdir(args.out_dir)
+    png_dir  = os.path.join(args.out_dir, "png")
+    json_dir = os.path.join(args.out_dir, "json")
+    logs_dir = os.path.join(args.out_dir, "logs")
+    os.makedirs(png_dir, exist_ok=True)
+    os.makedirs(json_dir, exist_ok=True)
+    os.makedirs(logs_dir, exist_ok=True)
+    gh = git_short_hash()
 
     # results[metric][(model, temp)] = list aligned with args.nshots
     results = {m: defaultdict(list) for m in args.metrics}
@@ -157,19 +188,28 @@ def run_and_plot(args):
                 print(f"[{model}] T={temp} nshots={nshot} -> " +
                       " ".join(f"{mn}={results[mn][key][-1]:.3f}" for mn in args.metrics))
 
-    # plotting
-    ensure_outdir(args.out_dir)
-    gh = git_short_hash()
-    common_params = {
-        "dataset": args.dataset,
-        "models": args.models,
-        "temps": args.temperature,
-        "nshots": args.nshots,
-        "seed": args.seed,
-        "n": args.n,
-        "test_size": args.test_size,
-    }
+# --- NEW: write usage/cost row per grid point ---
+                usage_csv = os.path.join(args.out_dir, "token_costs.csv")
+                write_usage_row(usage_csv, {
+                        "dataset": args.dataset,
+                        "n": args.n,
+                        "test_size": args.test_size,
+                        "seed": args.seed,
+                        "model": model,
+                        "temperature": temp,
+                        "nshots": nshot,
+                        "prompt_tokens": getattr(clf, "prompt_tokens", 0),
+                        "completion_tokens": getattr(clf, "completion_tokens", 0),
+                        "total_tokens": getattr(clf, "total_tokens", 0),
+                        "cost": f"{getattr(clf, 'total_cost', 0.0):.6f}",
+                        "git_hash": gh,
+    })
 
+    # plotting
+    safe_models = "-".join(sanitize_for_filename(m) for m in args.models)
+    safe_temps  = ",".join(map(str, args.temperature))
+    safe_nshots = ",".join(map(str, args.nshots))
+    
     for metric_name, series in results.items():
         plt.figure()
         for (model, temp), values in series.items():
@@ -183,39 +223,63 @@ def run_and_plot(args):
         plt.legend()
         plt.grid(True, alpha=0.3)
 
-        fname = (
+
+        base = (
             f"{metric_name}"
-            f"__dataset={args.dataset}"
-            f"__models={'-'.join(args.models)}"
-            f"__temps={','.join(map(str, args.temperature))}"
-            f"__nshots={','.join(map(str, args.nshots))}"
+            f"__dataset={sanitize_for_filename(args.dataset)}"
+            f"__models={safe_models}"
+            f"__temps={safe_temps}"
+            f"__nshots={safe_nshots}"
             f"__seed={args.seed}"
             f"__n={args.n}"
             f"__hash={gh}.png"
         ).replace(" ", "")
-        out_path = os.path.join(args.out_dir, fname)
-        plt.savefig(out_path, dpi=180, bbox_inches="tight")
-        plt.close()
-        print(f"Wrote: {out_path}")
 
-        json_path = out_path.replace(".png", ".json")
-        serializable = {f"{k[0]}|T={k[1]}": v for k, v in series.items()}
+        # save PNG
+        png_path = os.path.join(png_dir, base + ".png")
+        os.makedirs(os.path.dirname(png_path), exist_ok=True)
+        plt.savefig(png_path, dpi=180, bbox_inches="tight")
+        plt.close()
+        print(f"Wrote: {png_path}")
+
+        json_path = os.path.join(json_dir, base + ".json")
+        os.makedirs(os.path.dirname(json_path), exist_ok=True)
         with open(json_path, "w") as f:
             json.dump({
                 "metric": metric_name,
                 "nshots": args.nshots,
-                "series": serializable,
-                "params": common_params,
+                "series": {f"{k[0]}|T={k[1]}": v for k, v in series.items()},
+                "params": {
+                    "dataset": args.dataset,
+                    "models": args.models,
+                    "temps": args.temperature,
+                    "nshots": args.nshots,
+                    "seed": args.seed,
+                    "n": args.n,
+                    "test_size": args.test_size,
+                },
                 "git_hash": gh,
             }, f, indent=2)
         print(f"Wrote: {json_path}")
-
 
 def main():
     args = parse_args()
     # ensure tuple for LLM constructor
     if isinstance(args.labels, list):
         args.labels = tuple(args.labels)
+    from datetime import datetime
+    import sys, os
+    
+
+    log_dir = os.path.join(args.out_dir, "logs")
+    os.makedirs(log_dir, exist_ok=True)
+
+    run_log = f"run_{datetime.now().strftime('%Y%m%d-%H%M%S')}.log"
+    run_log_path = os.path.join(log_dir, run_log)
+    sys.stdout = open(run_log_path, "w")
+    sys.stderr = sys.stdout
+    print(f"Logging to {run_log_path}\n")
+    
     run_and_plot(args)
 
 
