@@ -1,0 +1,17 @@
+dataset,n,test_size,seed,model,temperature,nshots,prompt_tokens,completion_tokens,total_tokens,cost,git_hash
+imdb,400,0.3,42,meta-llama/llama-3.1-8b-instruct,0.0,0,39029,198,39227,0.000000,912c91f
+imdb,400,0.3,42,meta-llama/llama-3.1-8b-instruct,0.0,1,112901,196,113097,0.000000,912c91f
+imdb,400,0.3,42,meta-llama/llama-3.1-8b-instruct,0.0,2,225074,203,225277,0.000000,912c91f
+imdb,400,0.3,42,meta-llama/llama-3.1-8b-instruct,0.0,3,304684,204,304888,0.000000,912c91f
+imdb,400,0.3,42,meta-llama/llama-3.1-8b-instruct,0.3,0,38874,191,39065,0.000000,912c91f
+imdb,400,0.3,42,meta-llama/llama-3.1-8b-instruct,0.3,1,112957,200,113157,0.000000,912c91f
+imdb,400,0.3,42,meta-llama/llama-3.1-8b-instruct,0.3,2,225043,207,225250,0.000000,912c91f
+imdb,400,0.3,42,meta-llama/llama-3.1-8b-instruct,0.3,3,304577,205,304782,0.000000,912c91f
+imdb,400,0.3,42,mistralai/mixtral-8x7b-instruct,0.0,0,41806,322,42128,0.000000,912c91f
+imdb,400,0.3,42,mistralai/mixtral-8x7b-instruct,0.0,1,122676,456,123132,0.000000,912c91f
+imdb,400,0.3,42,mistralai/mixtral-8x7b-instruct,0.0,2,241717,468,242185,0.000000,912c91f
+imdb,400,0.3,42,mistralai/mixtral-8x7b-instruct,0.0,3,330649,463,331112,0.000000,912c91f
+imdb,400,0.3,42,mistralai/mixtral-8x7b-instruct,0.3,0,41813,331,42144,0.000000,912c91f
+imdb,400,0.3,42,mistralai/mixtral-8x7b-instruct,0.3,1,122674,462,123136,0.000000,912c91f
+imdb,400,0.3,42,mistralai/mixtral-8x7b-instruct,0.3,2,241719,468,242187,0.000000,912c91f
+imdb,400,0.3,42,mistralai/mixtral-8x7b-instruct,0.3,3,330624,464,331088,0.000000,912c91f

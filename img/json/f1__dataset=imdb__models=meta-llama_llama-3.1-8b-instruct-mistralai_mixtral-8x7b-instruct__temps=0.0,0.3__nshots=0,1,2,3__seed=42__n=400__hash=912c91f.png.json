@@ -1,0 +1,56 @@
+{
+  "metric": "f1",
+  "nshots": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "series": {
+    "meta-llama/llama-3.1-8b-instruct|T=0.0": [
+      0.9105691056910569,
+      0.9256198347107438,
+      0.9421487603305785,
+      0.9401709401709402
+    ],
+    "meta-llama/llama-3.1-8b-instruct|T=0.3": [
+      0.9032258064516129,
+      0.95,
+      0.9333333333333333,
+      0.9322033898305084
+    ],
+    "mistralai/mixtral-8x7b-instruct|T=0.0": [
+      0.9032258064516129,
+      0.9243697478991597,
+      0.957983193277311,
+      0.95
+    ],
+    "mistralai/mixtral-8x7b-instruct|T=0.3": [
+      0.9105691056910569,
+      0.9243697478991597,
+      0.9666666666666667,
+      0.95
+    ]
+  },
+  "params": {
+    "dataset": "imdb",
+    "models": [
+      "meta-llama/llama-3.1-8b-instruct",
+      "mistralai/mixtral-8x7b-instruct"
+    ],
+    "temps": [
+      0.0,
+      0.3
+    ],
+    "nshots": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "seed": 42,
+    "n": 400,
+    "test_size": 0.3
+  },
+  "git_hash": "912c91f"
+}

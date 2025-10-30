@@ -1,0 +1,28 @@
+Logging to img/logs/run_20251029-173521.log
+
+Train: Counter({'positive': 140, 'negative': 140})
+Test:  Counter({'positive': 60, 'negative': 60})
+[meta-llama/llama-3.1-8b-instruct] T=0.0 nshots=0 -> accuracy=0.908 precision=0.889 recall=0.933 f1=0.911
+[meta-llama/llama-3.1-8b-instruct] T=0.0 nshots=1 -> accuracy=0.925 precision=0.918 recall=0.933 f1=0.926
+[meta-llama/llama-3.1-8b-instruct] T=0.0 nshots=2 -> accuracy=0.942 precision=0.934 recall=0.950 f1=0.942
+[meta-llama/llama-3.1-8b-instruct] T=0.0 nshots=3 -> accuracy=0.942 precision=0.965 recall=0.917 f1=0.940
+[meta-llama/llama-3.1-8b-instruct] T=0.3 nshots=0 -> accuracy=0.900 precision=0.875 recall=0.933 f1=0.903
+[meta-llama/llama-3.1-8b-instruct] T=0.3 nshots=1 -> accuracy=0.950 precision=0.950 recall=0.950 f1=0.950
+[meta-llama/llama-3.1-8b-instruct] T=0.3 nshots=2 -> accuracy=0.933 precision=0.933 recall=0.933 f1=0.933
+[meta-llama/llama-3.1-8b-instruct] T=0.3 nshots=3 -> accuracy=0.933 precision=0.948 recall=0.917 f1=0.932
+[mistralai/mixtral-8x7b-instruct] T=0.0 nshots=0 -> accuracy=0.900 precision=0.875 recall=0.933 f1=0.903
+[mistralai/mixtral-8x7b-instruct] T=0.0 nshots=1 -> accuracy=0.925 precision=0.932 recall=0.917 f1=0.924
+[mistralai/mixtral-8x7b-instruct] T=0.0 nshots=2 -> accuracy=0.958 precision=0.966 recall=0.950 f1=0.958
+[mistralai/mixtral-8x7b-instruct] T=0.0 nshots=3 -> accuracy=0.950 precision=0.950 recall=0.950 f1=0.950
+[mistralai/mixtral-8x7b-instruct] T=0.3 nshots=0 -> accuracy=0.908 precision=0.889 recall=0.933 f1=0.911
+[mistralai/mixtral-8x7b-instruct] T=0.3 nshots=1 -> accuracy=0.925 precision=0.932 recall=0.917 f1=0.924
+[mistralai/mixtral-8x7b-instruct] T=0.3 nshots=2 -> accuracy=0.967 precision=0.967 recall=0.967 f1=0.967
+[mistralai/mixtral-8x7b-instruct] T=0.3 nshots=3 -> accuracy=0.950 precision=0.950 recall=0.950 f1=0.950
+Wrote: img/png/accuracy__dataset=imdb__models=meta-llama_llama-3.1-8b-instruct-mistralai_mixtral-8x7b-instruct__temps=0.0,0.3__nshots=0,1,2,3__seed=42__n=400__hash=912c91f.png.png
+Wrote: img/json/accuracy__dataset=imdb__models=meta-llama_llama-3.1-8b-instruct-mistralai_mixtral-8x7b-instruct__temps=0.0,0.3__nshots=0,1,2,3__seed=42__n=400__hash=912c91f.png.json
+Wrote: img/png/precision__dataset=imdb__models=meta-llama_llama-3.1-8b-instruct-mistralai_mixtral-8x7b-instruct__temps=0.0,0.3__nshots=0,1,2,3__seed=42__n=400__hash=912c91f.png.png
+Wrote: img/json/precision__dataset=imdb__models=meta-llama_llama-3.1-8b-instruct-mistralai_mixtral-8x7b-instruct__temps=0.0,0.3__nshots=0,1,2,3__seed=42__n=400__hash=912c91f.png.json
+Wrote: img/png/recall__dataset=imdb__models=meta-llama_llama-3.1-8b-instruct-mistralai_mixtral-8x7b-instruct__temps=0.0,0.3__nshots=0,1,2,3__seed=42__n=400__hash=912c91f.png.png
+Wrote: img/json/recall__dataset=imdb__models=meta-llama_llama-3.1-8b-instruct-mistralai_mixtral-8x7b-instruct__temps=0.0,0.3__nshots=0,1,2,3__seed=42__n=400__hash=912c91f.png.json
+Wrote: img/png/f1__dataset=imdb__models=meta-llama_llama-3.1-8b-instruct-mistralai_mixtral-8x7b-instruct__temps=0.0,0.3__nshots=0,1,2,3__seed=42__n=400__hash=912c91f.png.png
+Wrote: img/json/f1__dataset=imdb__models=meta-llama_llama-3.1-8b-instruct-mistralai_mixtral-8x7b-instruct__temps=0.0,0.3__nshots=0,1,2,3__seed=42__n=400__hash=912c91f.png.json
